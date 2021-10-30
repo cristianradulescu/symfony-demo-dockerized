@@ -16,6 +16,7 @@ stop:
 
 composer-install:
 	docker-compose exec php-fpm composer install
+	docker-compose exec php-fpm ./vendor/bin/simple-phpunit install
 	make yarn-install
 	make yarn-encore-prod
 
@@ -39,3 +40,6 @@ run-phpcsfixer-dry:
 
 run-phpcsfixer-and-fix:
 	docker-compose exec php-fpm ./vendor/bin/php-cs-fixer fix --diff --verbose
+
+run-phpstan:
+	docker-compose exec php-fpm ./vendor/bin/phpstan analyze --memory-limit=-1
