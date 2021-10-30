@@ -33,3 +33,9 @@ yarn-encore-prod:
 
 run-tests:
 	docker-compose exec php-fpm ./bin/phpunit
+
+run-phpcsfixer-dry:
+	docker-compose exec php-fpm ./vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+
+run-phpcsfixer-and-fix:
+	docker-compose exec php-fpm ./vendor/bin/php-cs-fixer fix --diff --verbose
