@@ -9,6 +9,7 @@ RUN apt-get update && apt-get upgrade -y \
   && apt-get install -y gcc libc-dev make libzip-dev wget curl unzip libicu-dev git sudo nodejs npm python \
   && npm install -g yarn \
   && docker-php-ext-install zip \
+  && docker-php-ext-install intl \
   && pecl install xdebug && docker-php-ext-enable xdebug \
   && apt-get autoremove -y && apt-get clean -y
 
