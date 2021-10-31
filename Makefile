@@ -30,8 +30,6 @@ stop:
 composer-install: serve
 	$(PHP) composer install
 	$(PHP) ./vendor/bin/simple-phpunit install
-	make yarn-install
-	make yarn-encore-prod
 
 composer-update: serve
 	$(PHP) composer update
@@ -56,6 +54,3 @@ run-phpcsfixer-and-fix: serve
 
 run-phpstan: serve
 	$(PHP) ./vendor/bin/phpstan analyze --memory-limit=-1
-
-start-jenkins-node:
-	${DOCKER_COMPOSE} exec jenkins-node ./bin/jenkins_start-agent.sh

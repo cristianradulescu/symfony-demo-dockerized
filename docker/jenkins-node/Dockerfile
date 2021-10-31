@@ -1,5 +1,7 @@
 FROM sfdemo-dockerized:base
 
+COPY ./docker/jenkins-node/docker-php-entrypoint.sh /usr/local/bin/docker-php-entrypoint
+
 ARG USERNAME
 
 RUN apt-get install -y openjdk-11-jre ca-certificates gnupg lsb-release
@@ -11,3 +13,5 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io d
 RUN groupadd docker || echo 0
 RUN usermod -aG docker $USERNAME
 USER $USERNAME
+
+ENTRYPOINT ["docker-php-entrypoint"]

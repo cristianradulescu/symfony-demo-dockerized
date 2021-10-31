@@ -41,7 +41,6 @@ services:
         environment:
             - DOCKER_HOST=tcp://docker:2375
             - DOCKER_TLS_CERTDIR=/certs
-        entrypoint: ["${CONTAINER_PROJECT_DIR}/bin/jenkins_start-agent.sh"]
 
 volumes:
     jenkins_home:
