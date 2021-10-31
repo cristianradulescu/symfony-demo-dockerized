@@ -28,7 +28,7 @@ stop:
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) ${DOCKER_COMPOSE} down --remove-orphans
 
 composer-install: serve
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) $(PHP) composer install
+	$(PHP) composer install
 	$(PHP) ./vendor/bin/simple-phpunit install
 	make yarn-install
 	make yarn-encore-prod

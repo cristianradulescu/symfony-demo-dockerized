@@ -24,6 +24,7 @@ services:
         environment:
             - DOCKER_TLS_CERTDIR=/certs
         volumes:
+            - ./:${CONTAINER_PROJECT_DIR}
             - docker-certs-ca:/certs/ca
             - docker-certs-client:/certs/client
 
