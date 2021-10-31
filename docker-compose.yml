@@ -37,7 +37,6 @@ services:
             - jenkins
             - docker
         volumes:
-            - ./:${CONTAINER_PROJECT_DIR}
             - docker-certs-client:/certs/client
         environment:
             - DOCKER_HOST=tcp://docker:2375
