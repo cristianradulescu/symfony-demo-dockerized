@@ -1,11 +1,13 @@
 CONTAINER_PROJECT_DIR=/var/www/demo
+PHP=docker-compose exec php-fpm
 
+.PHONY: setup
 setup:
 	make build
 	make serve
 	make composer-install
 
-build:
+build: stop
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose build --build-arg USERNAME=$(shell whoami) --build-arg USER_ID=$(shell id -u) --force-rm
 
 serve:
@@ -14,32 +16,33 @@ serve:
 stop:
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose down --remove-orphans
 
-composer-install:
-	docker-compose exec php-fpm composer install
-	docker-compose exec php-fpm ./vendor/bin/simple-phpunit install
+composer-install: serve
+	$(PHP) composer install
+	$(PHP) ./vendor/bin/simple-phpunit install
 	make yarn-install
 	make yarn-encore-prod
+	make run-tests
 
-composer-update:
-	docker-compose exec php-fpm composer update
+composer-update: serve
+	$(PHP) composer update
 
-yarn-install:
-	docker-compose exec php-fpm yarn install
+yarn-install: serve
+	$(PHP) yarn install
 
-yarn-encore-dev:
-	docker-compose exec php-fpm yarn dev
+yarn-encore-dev: serve
+	$(PHP) yarn dev
 
-yarn-encore-prod:
-	docker-compose exec php-fpm yarn build
+yarn-encore-prod: serve
+	$(PHP) yarn build
 
-run-tests:
-	docker-compose exec php-fpm ./bin/phpunit
+run-tests: serve
+	$(PHP) ./bin/phpunit
 
-run-phpcsfixer-dry:
-	docker-compose exec php-fpm ./vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+run-phpcsfixer-dry: serve
+	$(PHP) ./vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
 
-run-phpcsfixer-and-fix:
-	docker-compose exec php-fpm ./vendor/bin/php-cs-fixer fix --diff --verbose
+run-phpcsfixer-and-fix: serve
+	$(PHP) ./vendor/bin/php-cs-fixer fix --diff --verbose
 
-run-phpstan:
-	docker-compose exec php-fpm ./vendor/bin/phpstan analyze --memory-limit=-1
+run-phpstan: serve
+	$(PHP) ./vendor/bin/phpstan analyze --memory-limit=-1
