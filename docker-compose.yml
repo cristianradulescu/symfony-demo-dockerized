@@ -4,9 +4,52 @@ services:
     php-fpm:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: ./docker/php-fpm/Dockerfile
         volumes:
             - ./:${CONTAINER_PROJECT_DIR}
             - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini
         ports:
             - "8000:8000"
+
+    jenkins:
+        image: jenkins/jenkins:lts-alpine
+        volumes:
+            -  jenkins_home:/var/jenkins_home
+        ports:
+            - "8080:8080"
+            - "50000:50000"
+
+    docker:
+        image: docker:dind-rootless
+        privileged: true
+        environment:
+            - DOCKER_TLS_CERTDIR=/certs
+        volumes:
+            - docker-certs-ca:/certs/ca
+            - docker-certs-client:/certs/client
+
+    jenkins-node:
+        build:
+            context: .
+            dockerfile: ./docker/jenkins-node/Dockerfile
+        depends_on:
+            - php-fpm
+            - jenkins
+            - docker
+        volumes:
+            - ./:${CONTAINER_PROJECT_DIR}
+            - docker-certs-client:/certs/client
+        environment:
+            - DOCKER_HOST=tcp://docker:2375
+            - DOCKER_TLS_CERTDIR=/certs
+        entrypoint: ["${CONTAINER_PROJECT_DIR}/bin/jenkins_start-agent.sh"]
+
+volumes:
+    jenkins_home:
+        name: jenkis_home
+
+    docker-certs-ca:
+        name: docker-certs-ca
+
+    docker-certs-client:
+        name: docker-certs-client

@@ -1,5 +1,14 @@
 CONTAINER_PROJECT_DIR=/var/www/demo
-PHP=docker-compose exec php-fpm
+
+DOCKER_COMPOSE=$(shell which docker-compose) -f docker-compose.yml
+
+# Jenkins env var
+CI=$(shell echo $${CI:-"false"})
+ifeq (${CI},true)
+	DOCKER_COMPOSE=$(shell which docker-compose) -f docker-compose-ci.yml
+endif
+
+PHP=${DOCKER_COMPOSE} exec -T php-fpm
 
 .PHONY: setup
 setup:
@@ -8,13 +17,14 @@ setup:
 	make composer-install
 
 build: stop
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose build --build-arg USERNAME=$(shell whoami) --build-arg USER_ID=$(shell id -u) --force-rm
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker build --build-arg USERNAME=$(shell whoami) --build-arg USER_ID=$(shell id -u) --force-rm -t sfdemo-dockerized:base .
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) ${DOCKER_COMPOSE} build --build-arg USERNAME=$(shell whoami) --force-rm
 
 serve:
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose up -d
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) ${DOCKER_COMPOSE} up -d
 
 stop:
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose down --remove-orphans
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) ${DOCKER_COMPOSE} down --remove-orphans
 
 composer-install: serve
 	$(PHP) composer install
@@ -46,3 +56,6 @@ run-phpcsfixer-and-fix: serve
 
 run-phpstan: serve
 	$(PHP) ./vendor/bin/phpstan analyze --memory-limit=-1
+
+start-jenkins-node:
+	${DOCKER_COMPOSE} exec jenkins-node ./bin/jenkins_start-agent.sh

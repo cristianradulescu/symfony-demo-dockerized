@@ -1,0 +1,12 @@
+version: '3.6'
+
+services:
+    php-fpm:
+        build:
+            context: .
+            dockerfile: ./docker/php-fpm/Dockerfile
+        volumes:
+            - ./:${CONTAINER_PROJECT_DIR}
+            - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini
+        ports:
+            - "8000:8000"

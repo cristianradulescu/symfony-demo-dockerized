@@ -1,4 +1,5 @@
 FROM php:8-fpm
+# sfdemo-dockerized:base
 
 ARG USER_ID
 ARG USERNAME
@@ -16,6 +17,7 @@ RUN apt-get update && apt-get upgrade -y \
 # add Composer and Symfony binaries
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY --from=symfonycorp/cli:latest /symfony /usr/bin/symfony
+COPY ./docker/php-fpm/php.ini /usr/local/etc/php/php.ini
 
 # create system user
 RUN useradd --groups www-data \
@@ -37,7 +39,3 @@ RUN mkdir /home/$USERNAME/.symfony \
   && /usr/bin/symfony self-update -y
 
 WORKDIR /var/www/demo
-
-USER $USERNAME
-
-CMD ["symfony", "serve", "--port=8000", "--no-tls", "--no-interaction"]
