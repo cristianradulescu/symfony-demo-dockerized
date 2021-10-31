@@ -15,6 +15,7 @@ setup:
 	make build
 	make serve
 	make composer-install
+	make run-tests
 
 build: stop
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker build --build-arg USERNAME=$(shell whoami) --build-arg USER_ID=$(shell id -u) --force-rm -t sfdemo-dockerized:base .
@@ -27,11 +28,10 @@ stop:
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) ${DOCKER_COMPOSE} down --remove-orphans
 
 composer-install: serve
-	$(PHP) composer install
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) $(PHP) composer install
 	$(PHP) ./vendor/bin/simple-phpunit install
 	make yarn-install
 	make yarn-encore-prod
-	make run-tests
 
 composer-update: serve
 	$(PHP) composer update
