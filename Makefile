@@ -1,5 +1,6 @@
 CONTAINER_PROJECT_DIR=/var/www/demo
-PHP=docker-compose exec php-fpm
+DOCKER_COMPOSE=CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose
+PHP=$(DOCKER_COMPOSE) exec php-fpm
 
 .PHONY: setup
 setup:
@@ -8,17 +9,18 @@ setup:
 	make composer-install
 
 build: stop
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose build \
+	$(DOCKER_COMPOSE) build \
 		--build-arg USERNAME=$(shell whoami) \
 		--build-arg USER_ID=$(shell id -u) \
 		--build-arg GROUP_ID=$(shell id -g) \
+		--build-arg WORKING_DIR=$(CONTAINER_PROJECT_DIR) \
 		--force-rm
 
 serve:
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 
 stop:
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose down --remove-orphans
+	$(DOCKER_COMPOSE) down --remove-orphans
 
 composer-install: serve
 	$(PHP) composer install

@@ -3,6 +3,7 @@ FROM php:8-fpm
 ARG USERNAME
 ARG USER_ID
 ARG GROUP_ID
+ARG WORKING_DIR
 
 ENV TZ=Europe/Bucharest
 
@@ -36,18 +37,18 @@ RUN useradd --groups www-data \
   --gid $GROUP_ID \
   $USERNAME
 
-# promote user to sudoer with password "docker"
+# !!! Don't do this in production !!! promote user to sudoer with password "docker"
 RUN usermod -aG sudo $USERNAME && echo "$USERNAME:docker" | chpasswd
 
-RUN mkdir /var/www/demo \
-  && chown $USERNAME:www-data /var/www/demo && chmod g+s /var/www/demo
+RUN mkdir $WORKING_DIR \
+  && chown $USERNAME:www-data $WORKING_DIR && chmod g+s $WORKING_DIR
 
 RUN mkdir /home/$USERNAME/.symfony \
   && chown $USERNAME:$USERNAME /home/$USERNAME/.symfony \
   && chmod 755 /home/$USERNAME/.symfony \
   && /usr/bin/symfony self-update -y
 
-WORKDIR /var/www/demo
+WORKDIR $WORKING_DIR
 
 USER $USERNAME
 
