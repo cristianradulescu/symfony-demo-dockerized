@@ -18,6 +18,9 @@ RUN apt-get update && apt-get upgrade -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY --from=symfonycorp/cli:latest /symfony /usr/bin/symfony
 
+# add PHP config
+COPY ./docker/php-fpm/php.ini /usr/local/etc/php/php.ini
+
 # create system group
 RUN groupadd -f \
     --system \

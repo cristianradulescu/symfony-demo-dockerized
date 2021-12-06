@@ -7,6 +7,6 @@ services:
             dockerfile: Dockerfile
         volumes:
             - ./:${CONTAINER_PROJECT_DIR}
-            - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini
+        working_dir: ${CONTAINER_PROJECT_DIR}
         ports:
             - "8000:8000"
