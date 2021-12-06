@@ -1,7 +1,8 @@
 FROM php:8-fpm
 
-ARG USER_ID
 ARG USERNAME
+ARG USER_ID
+ARG GROUP_ID
 
 ENV TZ=Europe/Bucharest
 
@@ -17,12 +18,19 @@ RUN apt-get update && apt-get upgrade -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY --from=symfonycorp/cli:latest /symfony /usr/bin/symfony
 
+# create system group
+RUN groupadd -f \
+    --system \
+    --gid $GROUP_ID \
+    $USERNAME
+
 # create system user
 RUN useradd --groups www-data \
   --system \
   --create-home \
   --home-dir /home/$USERNAME \
   --uid $USER_ID \
+  --gid $GROUP_ID \
   $USERNAME
 
 # promote user to sudoer with password "docker"

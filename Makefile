@@ -8,7 +8,11 @@ setup:
 	make composer-install
 
 build: stop
-	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose build --build-arg USERNAME=$(shell whoami) --build-arg USER_ID=$(shell id -u) --force-rm
+	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose build \
+		--build-arg USERNAME=$(shell whoami) \
+		--build-arg USER_ID=$(shell id -u) \
+		--build-arg GROUP_ID=$(shell id -g) \
+		--force-rm
 
 serve:
 	CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose up -d
