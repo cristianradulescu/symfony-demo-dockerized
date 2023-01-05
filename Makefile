@@ -1,6 +1,7 @@
 CONTAINER_PROJECT_DIR=/var/www/demo
 DOCKER_COMPOSE=CONTAINER_PROJECT_DIR=$(CONTAINER_PROJECT_DIR) docker-compose
 PHP=$(DOCKER_COMPOSE) exec php-fpm
+NODEJS=$(DOCKER_COMPOSE) exec nodejs
 
 .PHONY: setup
 setup:
@@ -33,13 +34,13 @@ composer-update: serve
 	$(PHP) composer update
 
 yarn-install: serve
-	$(PHP) yarn install
+	$(NODEJS) yarn install
 
 yarn-encore-dev: serve
-	$(PHP) yarn dev
+	$(NODEJS) yarn dev
 
 yarn-encore-prod: serve
-	$(PHP) yarn build
+	$(NODEJS) yarn build
 
 run-tests: serve
 	$(PHP) ./bin/phpunit

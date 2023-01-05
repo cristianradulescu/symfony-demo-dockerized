@@ -1,4 +1,4 @@
-FROM php:8-fpm
+FROM php:8.1-fpm
 
 ARG USERNAME
 ARG USER_ID
@@ -17,7 +17,8 @@ RUN apt-get update && apt-get upgrade -y \
 
 # add Composer and Symfony binaries
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-COPY --from=symfonycorp/cli:latest /symfony /usr/bin/symfony
+RUN curl -sS https://get.symfony.com/cli/installer | bash \
+  && mv /root/.symfony5/bin/symfony /usr/bin/symfony
 
 # add PHP config
 COPY ./docker/php-fpm/php.ini /usr/local/etc/php/php.ini
@@ -45,8 +46,7 @@ RUN mkdir $WORKING_DIR \
 
 RUN mkdir /home/$USERNAME/.symfony \
   && chown $USERNAME:$USERNAME /home/$USERNAME/.symfony \
-  && chmod 755 /home/$USERNAME/.symfony \
-  && /usr/bin/symfony self-update -y
+  && chmod 755 /home/$USERNAME/.symfony
 
 WORKDIR $WORKING_DIR
 

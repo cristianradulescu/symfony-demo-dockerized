@@ -29,11 +29,9 @@ use function Symfony\Component\String\u;
  */
 class DateTimePickerType extends AbstractType
 {
-    private $formatConverter;
-
-    public function __construct(MomentFormatConverter $converter)
-    {
-        $this->formatConverter = $converter;
+    public function __construct(
+        private MomentFormatConverter $formatConverter
+    ) {
     }
 
     /**
@@ -41,7 +39,10 @@ class DateTimePickerType extends AbstractType
      */
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
-        $view->vars['attr']['data-date-format'] = $this->formatConverter->convert($options['format']);
+        /** @var string $format */
+        $format = $options['format'];
+
+        $view->vars['attr']['data-date-format'] = $this->formatConverter->convert($format);
         $view->vars['attr']['data-date-locale'] = u(\Locale::getDefault())->replace('_', '-')->lower();
     }
 

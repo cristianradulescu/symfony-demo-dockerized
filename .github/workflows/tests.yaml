@@ -10,12 +10,10 @@ env:
     fail-fast: true
     PHPUNIT_FLAGS: "-v"
     SYMFONY_PHPUNIT_DIR: "$HOME/symfony-bridge/.phpunit"
-    SYMFONY_REQUIRE: ">=4.4"
-    # 40x: Since symfony/monolog-bridge 5.2:
-    # Passing an actionLevel (int|string) as constructor's 3rd argument of
-    # "Symfony\Bridge\Monolog\Handler\FingersCrossed\HttpCodeActivationStrategy"
-    # is deprecated, "Monolog\Handler\FingersCrossed\ActivationStrategyInterface" expected.
-    SYMFONY_DEPRECATIONS_HELPER: 40
+    SYMFONY_DEPRECATIONS_HELPER: 7
+
+permissions:
+    contents: read
 
 jobs:
     test:
@@ -26,19 +24,19 @@ jobs:
         strategy:
             matrix:
                 operating-system: ['ubuntu-latest']
-                php-version: ['7.3', '7.4', '8.0']
+                php-version: ['8.1']
                 include:
                     - operating-system: 'macos-latest'
-                      php-version: '8.0'
+                      php-version: '8.1'
                     - operating-system: 'windows-latest'
-                      php-version: '8.0'
+                      php-version: '8.1'
 
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v2.3.3
+              uses: actions/checkout@v3
 
             - name: "Install PHP with extensions"
-              uses: shivammathur/setup-php@2.7.0
+              uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
                   extensions: "intl, mbstring, pdo_sqlite"
@@ -50,19 +48,18 @@ jobs:
 
             - name: "Set composer cache directory"
               id: composer-cache
-              run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+              shell: bash
 
             - name: "Cache composer"
-              uses: actions/cache@v2.1.2
+              uses: actions/cache@v3
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: ${{ runner.os }}-${{ matrix.php-version }}-composer-${{ hashFiles('composer.json') }}
                   restore-keys: ${{ runner.os }}-${{ matrix.php-version }}-composer-
 
-            - name: "Require symfony/flex"
-              run: composer global require --no-progress --no-scripts --no-plugins symfony/flex dev-main
-
-            - run: composer update
+            - name: "Install dependencies"
+              run: composer install --no-interaction --no-progress
 
             - name: "Install PHPUnit"
               run: vendor/bin/simple-phpunit install

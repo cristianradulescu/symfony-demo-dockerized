@@ -9,13 +9,16 @@ on:
 env:
     fail-fast: true
 
+permissions:
+    contents: read
+
 jobs:
     php-cs-fixer:
         name: PHP-CS-Fixer
         runs-on: ubuntu-latest
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: PHP-CS-Fixer
               uses: docker://oskarstark/php-cs-fixer-ga
@@ -27,26 +30,26 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                php-version: ['7.4']
+                php-version: ['8.1']
 
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v2.3.3
+              uses: actions/checkout@v3
 
             - name: "Install PHP with extensions"
-              uses: shivammathur/setup-php@2.7.0
+              uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
                   extensions: intl
                   php-version: ${{ matrix.php-version }}
-                  tools: composer:v2, phpstan
+                  tools: composer:v2
 
             - name: "Set composer cache directory"
               id: composer-cache
-              run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
             - name: "Cache composer"
-              uses: actions/cache@v2.1.2
+              uses: actions/cache@v3
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: ${{ runner.os }}-${{ matrix.php-version }}-composer-${{ hashFiles('composer.lock') }}
@@ -83,14 +86,10 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: composer validate --strict
 
-            - name: Download Symfony CLI
-              if: always() && steps.install.outcome == 'success'
-              run: wget https://get.symfony.com/cli/installer -O - | bash
-
             - name: Check if any dependencies are compromised
               if: always() && steps.install.outcome == 'success'
-              run: /home/runner/.symfony/bin/symfony check:security
+              run: composer audit
 
             - name: Run PHPStan
               if: always() && steps.install.outcome == 'success'
-              run: phpstan analyze
+              run: ./vendor/bin/phpstan analyze

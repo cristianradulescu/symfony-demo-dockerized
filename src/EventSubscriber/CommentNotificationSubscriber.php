@@ -11,6 +11,8 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\Post;
+use App\Entity\User;
 use App\Event\CommentCreatedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -25,17 +27,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class CommentNotificationSubscriber implements EventSubscriberInterface
 {
-    private $mailer;
-    private $translator;
-    private $urlGenerator;
-    private $sender;
-
-    public function __construct(MailerInterface $mailer, UrlGeneratorInterface $urlGenerator, TranslatorInterface $translator, string $sender)
-    {
-        $this->mailer = $mailer;
-        $this->urlGenerator = $urlGenerator;
-        $this->translator = $translator;
-        $this->sender = $sender;
+    public function __construct(
+        private MailerInterface $mailer,
+        private UrlGeneratorInterface $urlGenerator,
+        private TranslatorInterface $translator,
+        private string $sender
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -48,7 +45,15 @@ class CommentNotificationSubscriber implements EventSubscriberInterface
     public function onCommentCreated(CommentCreatedEvent $event): void
     {
         $comment = $event->getComment();
+
+        /** @var Post $post */
         $post = $comment->getPost();
+
+        /** @var User $author */
+        $author = $post->getAuthor();
+
+        /** @var string $emailAddress */
+        $emailAddress = $author->getEmail();
 
         $linkToPost = $this->urlGenerator->generate('blog_post', [
             'slug' => $post->getSlug(),
@@ -57,14 +62,14 @@ class CommentNotificationSubscriber implements EventSubscriberInterface
 
         $subject = $this->translator->trans('notification.comment_created');
         $body = $this->translator->trans('notification.comment_created.description', [
-            '%title%' => $post->getTitle(),
-            '%link%' => $linkToPost,
+            'title' => $post->getTitle(),
+            'link' => $linkToPost,
         ]);
 
         // See https://symfony.com/doc/current/mailer.html
         $email = (new Email())
             ->from($this->sender)
-            ->to($post->getAuthor()->getEmail())
+            ->to($emailAddress)
             ->subject($subject)
             ->html($body)
         ;
